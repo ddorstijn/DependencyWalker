@@ -38,6 +38,13 @@ namespace DependencyWalker
             _dependencyList = dependencyList;
         }
 
+        /// <summary>
+        /// Generate list based on package. This is a set with only unique items.
+        /// </summary>
+        /// <param name="package">Id and Version of the package the dependency list will be build from</param>
+        /// <param name="framework">The target framework for which the package should be picked</param>
+        /// <param name="logger">Optional: Enable logging for Fetching and Resolving packages</param>
+        /// <returns>List with unique packages to be installed</returns>
         public static async Task<DependencyList> Build(PackageIdentity package, NuGetFramework framework, ILogger? logger)
         {
             logger ??= NullLogger.Instance;
@@ -71,6 +78,15 @@ namespace DependencyWalker
             return new DependencyList(dependencies);
         }
 
+        /// <summary>
+        /// Recursively find packages dependencies
+        /// </summary>
+        /// <param name="package">Id and Version of the package the dependency list will be build from</param>
+        /// <param name="framework">The target framework for which the package should be picked</param>
+        /// <param name="cacheContext">Used for caching already fetched items. This speeds up information gathering</param>
+        /// <param name="logger"></param>
+        /// <param name="availablePackages">Set of possible packages. Packages with the same Id but a different version can later be resolved by the PackageResolver</param>
+        /// <exception cref="PackageNotFoundException">Exception thrown when no package can be found. Either due to a misspelling of the base package or no package existing of the specific version or target framework.</exception>
         private static async Task GetPackageDependencies(PackageIdentity package, NuGetFramework framework, SourceCacheContext cacheContext, ILogger logger, ISet<SourcePackageDependencyInfo> availablePackages)
         {
             if (availablePackages.Contains(package)) return;
@@ -91,6 +107,9 @@ namespace DependencyWalker
             
         }
 
+        /// <summary>
+        /// The list as a script to install with UBlendIt
+        /// </summary>
         public XElement InstallScript
         {
             get
